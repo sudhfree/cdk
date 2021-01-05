@@ -1,0 +1,200 @@
+import sys
+from awsglue.transforms import *
+from awsglue.utils import getResolvedOptions
+from pyspark.context import SparkContext
+from awsglue.dynamicframe import DynamicFrame
+from awsglue.context import GlueContext
+from awsglue.job import Job
+from pyspark.sql import SQLContext
+from pyspark.sql.functions import unix_timestamp
+from pyspark.sql.functions import *
+from pyspark.sql.functions import udf
+
+##glueContext = GlueContext(SparkContext.getOrCreate())
+## @params: [TempDir, JOB_NAME]
+args = getResolvedOptions(sys.argv, ['TempDir','JOB_NAME'])
+sc = SparkContext()
+sqlContext = SQLContext(sc)
+glueContext = GlueContext(sc)
+spark = glueContext.spark_session
+job = Job(glueContext)
+job.init(args['JOB_NAME'], args)
+
+datasource0 = glueContext.create_dynamic_frame.from_catalog(database ="test_royalties_data", table_name = "dim_live_stations_genres_v2",transformation_ctx = "datasource0")
+datasource1 = glueContext.create_dynamic_frame.from_catalog(database = "test_royalties_data", table_name = "dim_live_stations_v2",transformation_ctx = "datasource1")
+
+datasource0_tmp = datasource0.toDF()
+datasource1_tmp = datasource1.toDF()
+
+datasource0_tmp.createOrReplaceTempView("dim_live_stations_genres_v2")
+datasource1_tmp.createOrReplaceTempView("dim_live_stations_v2")
+
+df1 = spark.sql("WITH genre_t AS ( \
+        SELECT *, ROW_NUMBER() over (PARTITION BY stream_id ORDER BY `primary` DESC) AS rn \
+        FROM dim_live_stations_genres_v2 \
+   ), \
+       station AS ( \
+      SELECT \
+      CASE WHEN date_start <  CAST(TRUNC('2020-10-11 00:00:00','MM') AS DATE) \
+           THEN CAST(TRUNC('2020-10-11 00:00:00','MM') AS DATE) \
+           ELSE CAST(date_start AS DATE) END AS start_date, \
+      CASE WHEN date_end >= CAST(add_months(TRUNC('2020-10-11 00:00:00','MM'), 1) AS DATE) \
+           THEN date_sub(add_months(TRUNC('2020-10-11 00:00:00','MM'), 1),1) \
+           ELSE CAST(date_end AS DATE) END AS end_date, \
+      call_letter, \
+      provider_name, \
+      COALESCE(cp_code, cp_code_2) AS cp_code, \
+      stream_esid, \
+      stream_id, \
+      CASE WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-AM' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-AM','-IA') \
+           WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-FM' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-FM','-IF') \
+           WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-HD2' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-HD2','-G2') \
+           WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-HD3' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-HD3','-G3') \
+           WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-HD4' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-HD4','-G4') \
+           WHEN COALESCE(alias_call_letter, call_letter) LIKE '%-HD5' THEN REPLACE(COALESCE(alias_call_letter, call_letter), '-HD5','-G5') \
+           ELSE COALESCE(alias_call_letter, call_letter) \
+      END AS mb_digital_call_letter, \
+      alias_call_letter, \
+      royalty_alias_call_letter \
+  FROM dim_live_stations_v2 \
+  WHERE \
+  provider_name IN ('Clear Channel', 'Clear Channel Digital') \
+  AND is_active = 1 \
+  AND date_end >= CAST(TRUNC('2020-10-11 00:00:00','MM') AS DATE) \
+  AND date_start < CAST(add_months(TRUNC('2020-10-11 00:00:00','MM'), 1) AS DATE) \
+  AND CAST(date_start AS DATE) <> CAST(date_end AS DATE) \
+  AND date_add(CAST(date_start AS DATE),1) <> add_months(TRUNC('2020-10-11 00:00:00','MM'), 1) \
+  ), hash_string AS ( \
+  SELECT \
+      start_date, \
+      end_date, \
+      call_letter, \
+      provider_name, \
+      cp_code, \
+      stream_esid, \
+      stream_id, \
+      mb_digital_call_letter, \
+      alias_call_letter, \
+      royalty_alias_call_letter, \
+          sha2(CONCAT_WS( \
+             call_letter, \
+              provider_name, \
+              cp_code, \
+              CAST(stream_esid AS string), \
+              CAST(stream_id AS string), \
+              mb_digital_call_letter, \
+              alias_call_letter, \
+             royalty_alias_call_letter \
+          ) \
+      ,256) AS hash \
+  FROM station \
+  ), calc_prev_hash AS ( \
+  SELECT *, \
+      COALESCE(LAG(hash) over (PARTITION BY stream_id ORDER BY start_date asc),'N/A') AS prev_hash, \
+      COALESCE(LEAD(hash) over (PARTITION BY stream_id ORDER BY start_date asc),'N/A') AS next_hash \
+  FROM hash_string \
+  ), calc_change AS ( \
+  SELECT *, \
+      CASE WHEN hash <> prev_hash and hash <> next_hash THEN 1 \
+           ELSE 0 \
+      END AS is_change \
+  FROM calc_prev_hash \
+  ), no_change AS ( \
+  SELECT *, \
+      CASE WHEN COALESCE(start_date) > CAST(TRUNC('${hiveconf:dim_dt}','MM') AS DATE) THEN date_add(start_date,1) \
+           ELSE start_date \
+      END AS modified_start_date \
+  FROM calc_change \
+  WHERE is_change = 0 \
+  ), change AS ( \
+  SELECT *, lead(start_date) over (PARTITION BY stream_id ORDER BY start_date asc) AS next_start_date \
+  FROM calc_change \
+  WHERE is_change = 1 \
+  ), mod_end_date AS ( \
+  SELECT *, \
+      CASE WHEN COALESCE(start_date, next_start_date) > CAST(TRUNC('2020-10-11 00:00:00','MM') AS DATE) \
+           THEN date_add(COALESCE(start_date, next_start_date),1) \
+           ELSE COALESCE(start_date, next_start_date) \
+      END AS modified_start_date, \
+      CASE WHEN next_start_date = end_date \
+           THEN date_sub(end_date, 1) \
+           ELSE end_date \
+      END AS modified_end_date \
+  FROM change \
+  ), union_set AS ( \
+  SELECT \
+      min(modified_start_date) AS start_date, \
+      max(end_date) AS end_date, \
+      call_letter, \
+      provider_name, \
+      cp_code, \
+      stream_esid, \
+      stream_id, \
+      mb_digital_call_letter, \
+      alias_call_letter, \
+      royalty_alias_call_letter \
+  FROM no_change \
+  GROUP BY call_letter, \
+      provider_name, \
+      cp_code, \
+      stream_esid, \
+      stream_id, \
+      mb_digital_call_letter, \
+      alias_call_letter, \
+      royalty_alias_call_letter \
+      UNION ALL \
+  SELECT \
+      modified_start_date AS start_date, \
+      modified_end_date AS end_date, \
+      call_letter, \
+      provider_name, \
+      cp_code, \
+      stream_esid, \
+      stream_id, \
+      mb_digital_call_letter, \
+      alias_call_letter, \
+      royalty_alias_call_letter \
+  FROM mod_end_date \
+  ) SELECT \
+    s.start_date As start_date, \
+    s.end_date As end_date, \
+    s.call_letter As call_letter, \
+    s.provider_name As provider_name, \
+    s.cp_code As cp_code, \
+    s.stream_esid As stream_esid, \
+    g.genre AS genre_name, \
+    s.stream_id As stream_id, \
+CASE WHEN length(mb_digital_call_letter)>7 \
+     THEN substr(split(mb_digital_call_letter,'-')[0],0,7) \
+     ELSE mb_digital_call_letter \
+END AS mb_digital_call_letter, \
+    s.alias_call_letter As alias_call_letter, \
+    s.royalty_alias_call_letter As royalty_alias_call_letter, \
+    '2020-10-11' As dt \
+FROM union_set s \
+    LEFT JOIN (SELECT stream_id, genre FROM genre_t where rn = 1) g on s.stream_id = g.stream_id \
+")
+
+dyf_station_master = DynamicFrame.fromDF(df1, glueContext, "nested")
+
+##dropnullfields1 = DropNullFields.apply(frame = dyf_station_master, transformation_ctx = "dropnullfields")
+
+#print(dyf_station_master.show(1))
+
+applymapping1 = ApplyMapping.apply(frame = dyf_station_master, mappings =
+[("start_date", "start_date", "date"),("end_date","end_date","date"),("call_letter","call_letter","string"),("provider_name","string","provider_name","string"), ("cp_code","cp_code","string"),
+("stream_esid","stream_esid","int"), ("genre_name","genre_name","string"),("stream_id","stream_id","int"),("mb_digital_call_letter","mb_digital_call_letter", "string"),
+("alias_call_letter", "string", "alias_call_letter", "string"),("royalty_alias_call_letter", "string","royalty_alias_call_letter", "string"),("dt","dt", "string")], transformation_ctx = "applymapping1")
+
+#print(applymapping1.show(1))
+
+selectfields2 = SelectFields.apply(frame = applymapping1, paths =
+["start_date","end_date","call_letter","provider_name","cp_code","stream_esid","genre_name","stream_id","mb_digital_call_letter","alias_call_letter","royalty_alias_call_letter","dt"],transformation_ctx = "selectfields2")
+
+#print(selectfields2.show(1))
+
+datasink4 = glueContext.write_dynamic_frame.from_jdbc_conf(frame=selectfields2, catalog_connection="Royalties2.0",
+                                                   connection_options={"preactions":"truncate table dw_royalties.station_master;","dbtable": "dw_royalties.station_master", "database": "devroyalties"},
+                                                   redshift_tmp_dir = args["TempDir"], transformation_ctx = "datasink4")
+                                                  
+job.commit()

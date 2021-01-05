@@ -1,0 +1,223 @@
+{
+  "version": "tree-0.1",
+  "tree": {
+    "id": "App",
+    "path": "",
+    "children": {
+      "Tree": {
+        "id": "Tree",
+        "path": "Tree"
+      },
+      "ihmbase-glue-project-test": {
+        "id": "ihmbase-glue-project-test",
+        "path": "ihmbase-glue-project-test",
+        "children": {
+          "RedshiftAPIRole": {
+            "id": "RedshiftAPIRole",
+            "path": "ihmbase-glue-project-test/RedshiftAPIRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "ihmbase-glue-project-test/RedshiftAPIRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "redshift.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "policies": [
+                      {
+                        "policyName": "0",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "ec2:DescribeVpcs",
+                                "ec2:DescribeSubnets",
+                                "ec2:DescribeNetworkInterfaces",
+                                "ec2:DescribeAddresses",
+                                "ec2:AssociateAddress",
+                                "ec2:DisassociateAddress",
+                                "ec2:CreateNetworkInterface",
+                                "ec2:DeleteNetworkInterface",
+                                "ec2:ModifyNetworkInterfaceAttribute",
+                                "ec2:CreateVpcEndpoint",
+                                "ec2:DeleteVpcEndpoints",
+                                "ec2:DescribeVpcEndpoints",
+                                "ec2:ModifyVpcEndpoint"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "RestAPIRole": {
+            "id": "RestAPIRole",
+            "path": "ihmbase-glue-project-test/RestAPIRole",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "ihmbase-glue-project-test/RestAPIRole/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::IAM::Role",
+                  "aws:cdk:cloudformation:props": {
+                    "assumeRolePolicyDocument": {
+                      "Statement": [
+                        {
+                          "Action": "sts:AssumeRole",
+                          "Effect": "Allow",
+                          "Principal": {
+                            "Service": "glue.amazonaws.com"
+                          }
+                        }
+                      ],
+                      "Version": "2012-10-17"
+                    },
+                    "policies": [
+                      {
+                        "policyName": "0",
+                        "policyDocument": {
+                          "Statement": [
+                            {
+                              "Action": [
+                                "glue:*",
+                                "glue:CreateDatabase",
+                                "cloudformation:*",
+                                "s3:GetBucketLocation",
+                                "s3:*",
+                                "s3:CreateBucket",
+                                "s3:ListBucket",
+                                "s3:ListAllMyBuckets",
+                                "s3:GetBucketAcl",
+                                "ec2:DescribeVpcEndpoints",
+                                "ec2:DescribeRouteTables",
+                                "ec2:CreateNetworkInterface",
+                                "ec2:DeleteNetworkInterface",
+                                "ec2:DescribeNetworkInterfaces",
+                                "ec2:DescribeSecurityGroups",
+                                "ec2:DescribeSubnets",
+                                "ec2:DescribeVpcAttribute",
+                                "iam:ListRolePolicies",
+                                "iam:GetRole",
+                                "iam:GetRolePolicy",
+                                "cloudwatch:PutMetricData"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "*"
+                            },
+                            {
+                              "Action": "s3:CreateBucket",
+                              "Effect": "Allow",
+                              "Resource": "arn:aws:s3:::aws-glue-*"
+                            },
+                            {
+                              "Action": [
+                                "s3:GetObject",
+                                "s3:PutObject",
+                                "s3:DeleteObject"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": [
+                                "arn:aws:s3:::aws-glue-*/*",
+                                "arn:aws:s3:::*/*aws-glue-*/*",
+                                "arn:aws:s3:::yourbucket*",
+                                "arn:aws:s3:::yourbucket*"
+                              ]
+                            },
+                            {
+                              "Action": "s3:GetObject",
+                              "Effect": "Allow",
+                              "Resource": [
+                                "arn:aws:s3:::crawler-public*",
+                                "arn:aws:s3:::aws-glue-*"
+                              ]
+                            },
+                            {
+                              "Action": [
+                                "logs:CreateLogGroup",
+                                "logs:CreateLogStream",
+                                "logs:PutLogEvents"
+                              ],
+                              "Effect": "Allow",
+                              "Resource": "arn:aws:logs:*:*:/aws-glue/*"
+                            }
+                          ],
+                          "Version": "2012-10-17"
+                        }
+                      }
+                    ]
+                  }
+                }
+              }
+            }
+          },
+          "Glue-database-id": {
+            "id": "Glue-database-id",
+            "path": "ihmbase-glue-project-test/Glue-database-id",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "ihmbase-glue-project-test/Glue-database-id/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Glue::Database",
+                  "aws:cdk:cloudformation:props": {
+                    "catalogId": "778359441486",
+                    "databaseInput": {
+                      "name": "glue_database_cdk"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "Glue-database-id1": {
+            "id": "Glue-database-id1",
+            "path": "ihmbase-glue-project-test/Glue-database-id1",
+            "children": {
+              "Resource": {
+                "id": "Resource",
+                "path": "ihmbase-glue-project-test/Glue-database-id1/Resource",
+                "attributes": {
+                  "aws:cdk:cloudformation:type": "AWS::Glue::Database",
+                  "aws:cdk:cloudformation:props": {
+                    "catalogId": "778359441486",
+                    "databaseInput": {
+                      "name": "glue_database_cdk1"
+                    }
+                  }
+                }
+              }
+            }
+          },
+          "CDKMetadata": {
+            "id": "CDKMetadata",
+            "path": "ihmbase-glue-project-test/CDKMetadata",
+            "children": {
+              "Default": {
+                "id": "Default",
+                "path": "ihmbase-glue-project-test/CDKMetadata/Default"
+              }
+            }
+          }
+        }
+      }
+    }
+  }
+}

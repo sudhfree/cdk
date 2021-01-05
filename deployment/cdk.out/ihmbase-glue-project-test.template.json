@@ -1,0 +1,179 @@
+{
+  "Resources": {
+    "RedshiftAPIRoleED68B63D": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "redshift.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "ec2:DescribeVpcs",
+                    "ec2:DescribeSubnets",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeAddresses",
+                    "ec2:AssociateAddress",
+                    "ec2:DisassociateAddress",
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:ModifyNetworkInterfaceAttribute",
+                    "ec2:CreateVpcEndpoint",
+                    "ec2:DeleteVpcEndpoints",
+                    "ec2:DescribeVpcEndpoints",
+                    "ec2:ModifyVpcEndpoint"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "0"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "ihmbase-glue-project-test/RedshiftAPIRole/Resource"
+      }
+    },
+    "RestAPIRoleA3B4EFA3": {
+      "Type": "AWS::IAM::Role",
+      "Properties": {
+        "AssumeRolePolicyDocument": {
+          "Statement": [
+            {
+              "Action": "sts:AssumeRole",
+              "Effect": "Allow",
+              "Principal": {
+                "Service": "glue.amazonaws.com"
+              }
+            }
+          ],
+          "Version": "2012-10-17"
+        },
+        "Policies": [
+          {
+            "PolicyDocument": {
+              "Statement": [
+                {
+                  "Action": [
+                    "glue:*",
+                    "glue:CreateDatabase",
+                    "cloudformation:*",
+                    "s3:GetBucketLocation",
+                    "s3:*",
+                    "s3:CreateBucket",
+                    "s3:ListBucket",
+                    "s3:ListAllMyBuckets",
+                    "s3:GetBucketAcl",
+                    "ec2:DescribeVpcEndpoints",
+                    "ec2:DescribeRouteTables",
+                    "ec2:CreateNetworkInterface",
+                    "ec2:DeleteNetworkInterface",
+                    "ec2:DescribeNetworkInterfaces",
+                    "ec2:DescribeSecurityGroups",
+                    "ec2:DescribeSubnets",
+                    "ec2:DescribeVpcAttribute",
+                    "iam:ListRolePolicies",
+                    "iam:GetRole",
+                    "iam:GetRolePolicy",
+                    "cloudwatch:PutMetricData"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "*"
+                },
+                {
+                  "Action": "s3:CreateBucket",
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:s3:::aws-glue-*"
+                },
+                {
+                  "Action": [
+                    "s3:GetObject",
+                    "s3:PutObject",
+                    "s3:DeleteObject"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:s3:::aws-glue-*/*",
+                    "arn:aws:s3:::*/*aws-glue-*/*",
+                    "arn:aws:s3:::yourbucket*",
+                    "arn:aws:s3:::yourbucket*"
+                  ]
+                },
+                {
+                  "Action": "s3:GetObject",
+                  "Effect": "Allow",
+                  "Resource": [
+                    "arn:aws:s3:::crawler-public*",
+                    "arn:aws:s3:::aws-glue-*"
+                  ]
+                },
+                {
+                  "Action": [
+                    "logs:CreateLogGroup",
+                    "logs:CreateLogStream",
+                    "logs:PutLogEvents"
+                  ],
+                  "Effect": "Allow",
+                  "Resource": "arn:aws:logs:*:*:/aws-glue/*"
+                }
+              ],
+              "Version": "2012-10-17"
+            },
+            "PolicyName": "0"
+          }
+        ]
+      },
+      "Metadata": {
+        "aws:cdk:path": "ihmbase-glue-project-test/RestAPIRole/Resource"
+      }
+    },
+    "Gluedatabaseid876F30B7": {
+      "Type": "AWS::Glue::Database",
+      "Properties": {
+        "CatalogId": "778359441486",
+        "DatabaseInput": {
+          "Name": "glue_database_cdk"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ihmbase-glue-project-test/Glue-database-id/Resource"
+      }
+    },
+    "Gluedatabaseid1E31D99D4": {
+      "Type": "AWS::Glue::Database",
+      "Properties": {
+        "CatalogId": "778359441486",
+        "DatabaseInput": {
+          "Name": "glue_database_cdk1"
+        }
+      },
+      "Metadata": {
+        "aws:cdk:path": "ihmbase-glue-project-test/Glue-database-id1/Resource"
+      }
+    },
+    "CDKMetadata": {
+      "Type": "AWS::CDK::Metadata",
+      "Properties": {
+        "Modules": "aws-cdk=1.78.0,@aws-cdk/assets=1.80.0,@aws-cdk/aws-applicationautoscaling=1.80.0,@aws-cdk/aws-autoscaling-common=1.80.0,@aws-cdk/aws-cloudwatch=1.80.0,@aws-cdk/aws-codeguruprofiler=1.80.0,@aws-cdk/aws-ec2=1.80.0,@aws-cdk/aws-ecr=1.80.0,@aws-cdk/aws-ecr-assets=1.80.0,@aws-cdk/aws-efs=1.80.0,@aws-cdk/aws-events=1.80.0,@aws-cdk/aws-glue=1.80.0,@aws-cdk/aws-iam=1.80.0,@aws-cdk/aws-kms=1.80.0,@aws-cdk/aws-lambda=1.80.0,@aws-cdk/aws-logs=1.80.0,@aws-cdk/aws-redshift=1.80.0,@aws-cdk/aws-s3=1.80.0,@aws-cdk/aws-s3-assets=1.80.0,@aws-cdk/aws-sam=1.80.0,@aws-cdk/aws-secretsmanager=1.80.0,@aws-cdk/aws-sqs=1.80.0,@aws-cdk/aws-ssm=1.80.0,@aws-cdk/cloud-assembly-schema=1.80.0,@aws-cdk/core=1.80.0,@aws-cdk/cx-api=1.80.0,@aws-cdk/region-info=1.80.0,jsii-runtime=Python/3.9.1"
+      },
+      "Metadata": {
+        "aws:cdk:path": "ihmbase-glue-project-test/CDKMetadata/Default"
+      }
+    }
+  }
+}
