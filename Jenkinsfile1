@@ -12,7 +12,7 @@ pipeline {
                 script{
                 //sh 'docker built -t test .'
                 def image = docker.build('test:1.0')
-                sh 'docker run -t test:1.0 /bin/bash -c 'cd deployment && python -m pip install -r requirement.cdk.txt && cdk synth''
+                sh "docker run -t test:1.0 /bin/bash -c 'cd deployment && python -m pip install -r requirement.cdk.txt && cdk synth'"
                 
         }
 		}
