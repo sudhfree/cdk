@@ -11,6 +11,7 @@ USER root
 #RUN chmod a+rw /
 #USER jenkins
 RUN npm version
+RUN pip install --upgrade pip
 RUN python --version
 RUN npm -g install aws-cdk
 RUN cdk version
