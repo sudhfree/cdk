@@ -19,7 +19,7 @@ pipeline {
         /* Run some tests which require MySQL */
                 sh '''cd deployment
                       ls
-                      python -m pip install --no-cache-dir -r requirements.cdk.txt
+                      pip install --no-cache-dir -r requirements.cdk.txt
                       cdk synth
                       cdk deploy
                       '''
