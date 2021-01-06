@@ -13,7 +13,7 @@ pipeline {
                 
                 def image = docker.build('test:1.0')
 
-                docker.image('test:1.0').withRun('-u root:root -w /var/lib/jenkins/workspace/try -v /var/lib/jenkins/workspace/try:/var/lib/jenkins/workspace/try:rw,z -v /var/lib/jenkins/workspace/try@tmp:/var/lib/jenkins/workspace/try@tmp:rw,z'){
+                docker.image('test:1.0').withRun('-u 996:993 -w /var/lib/jenkins/workspace/try -v /var/lib/jenkins/workspace/try:/var/lib/jenkins/workspace/try:rw,z -v /var/lib/jenkins/workspace/try@tmp:/var/lib/jenkins/workspace/try@tmp:rw,z'){
                 //image.inside
                     
         /* Run some tests which require MySQL */
