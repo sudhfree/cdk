@@ -7,7 +7,9 @@
 FROM nikolaik/python-nodejs
 
 USER root
-RUN chmod a+rw /
+#useradd jenkins -d /var/lib/jenkins
+#RUN chmod a+rw /
+#USER jenkins
 RUN npm version
 RUN python --version
 RUN npm -g install aws-cdk
