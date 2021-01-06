@@ -13,8 +13,8 @@ pipeline {
                 
                 def image = docker.build('test:1.0')
 
-                docker.image('test:1.0').withRun(''){
-                //image.inside
+                //docker.image('test:1.0').withRun(''){
+                image.inside{
                     
         /* Run some tests which require MySQL */
                 sh '''cd deployment
