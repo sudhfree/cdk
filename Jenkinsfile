@@ -11,7 +11,7 @@ pipeline {
             steps {
                 script{
                 
-                //def image = docker.build('test:1.0')
+                ////def image = docker.build('test:1.0')
 
                 //docker.image('test:1.0').withRun(''){
                 //image.inside{
