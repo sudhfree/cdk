@@ -24,7 +24,7 @@ pipeline {
                       cdk deploy
                       '''
                 //}
-                //}
+                }
                 
 
                    
