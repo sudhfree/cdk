@@ -1,8 +1,0 @@
-ENV = "ENV"
-DATABASE_NAME = "db_name"
-DB_HOST_URI = "db_host"
-DB_PORT = "db_port"
-REGION = "us-east-1"
-REDSHIFT_MASTER_USERNAME = "awsuser"
-REDSHIFT_MASTER_PASSWORD = "Test.1esttest"
-

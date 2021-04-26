@@ -1,3 +1,2 @@
-# Royalities2.0
-
-Main/root folder
+# BASE-Invoice-Services
+Invoice Services including API, Adjustment, Notification to NetSuite and other lambdas

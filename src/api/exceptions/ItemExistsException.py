@@ -1,0 +1,2 @@
+class DataItemExistsException(Exception):
+  pass

@@ -6,20 +6,20 @@ with open("README.md") as fp:
 
 
 setuptools.setup(
-    name="ihmbase_glue_project_test",
+    name="RefImpWalkthrough",
     version="0.0.1",
 
     description="An empty CDK Python app",
     long_description=long_description,
     long_description_content_type="text/markdown",
 
-    author="author",
+    author="Roy",
 
-    package_dir={"": "ihmbase_glue_project_test"},
-    packages=setuptools.find_packages(where="ihmbase_glue_project_test"),
+    package_dir={"": "RefImpWalkthrough"},
+    packages=setuptools.find_packages(where="RefImpWalkthrough"),
 
     install_requires=[
-        "aws-cdk.core==1.78.0",
+        "aws-cdk.core==1.75.0",
     ],
 
     python_requires=">=3.6",
