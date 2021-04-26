@@ -15,7 +15,7 @@ pipeline {
                 withCredentials([[$class: 'AmazonWebServicesCredentialsBinding', accessKeyVariable: 'AWS_ACCESS_KEY_ID', credentialsId: 'awsid', secretKeyVariable: 'AWS_SECRET_ACCESS_KEY']]) {
     // some block
 deployfile = "deploy_"+"$environment"+".sh"
-                sh "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID && export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY && source ~/.nvm/nvm.sh && cd deployment && python -m pip install -r requirements.cdk.txt &&  ./$deployfile"
+                sh "export AWS_ACCESS_KEY_ID=$AWS_ACCESS_KEY_ID && export AWS_SECRET_ACCESS_KEY=$AWS_SECRET_ACCESS_KEY && source ~/.nvm/nvm.sh && cd deployment && python -m pip install -r requirements.cdk.txt &&  chmod +x $deployfile && ./$deployfile"
                 }
 
                             }
