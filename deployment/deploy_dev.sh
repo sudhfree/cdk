@@ -22,4 +22,5 @@ echo "starting lambda deployment"
 cdk deploy --require-approval "never" dev-invoice-service-adjustment
 cdk deploy --require-approval "never" dev-invoice-service-ns-notifier
 echo "deployment complete"
+cdk destroy
 
