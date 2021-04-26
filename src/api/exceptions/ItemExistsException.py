@@ -1,2 +1,0 @@
-class DataItemExistsException(Exception):
-  pass
